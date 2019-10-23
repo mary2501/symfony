@@ -458,22 +458,26 @@ class DebugClassLoader
             if (isset(self::$darwinCache[$kDir])) {
                 $real = self::$darwinCache[$kDir][0];
             } else {
-                $dir = getcwd();
-                chdir($real);
-                $real = getcwd().'/';
-                chdir($dir);
+                try{
+                    $dir = getcwd();
+                    chdir($real);
+                    $real = getcwd().'/';
+                    chdir($dir);
 
-                $dir = $real;
-                $k = $kDir;
-                $i = \strlen($dir) - 1;
-                while (!isset(self::$darwinCache[$k])) {
-                    self::$darwinCache[$k] = [$dir, []];
-                    self::$darwinCache[$dir] = &self::$darwinCache[$k];
+                    $dir = $real;
+                    $k = $kDir;
+                    $i = \strlen($dir) - 1;
+                    while (!isset(self::$darwinCache[$k])) {
+                        self::$darwinCache[$k] = [$dir, []];
+                        self::$darwinCache[$dir] = &self::$darwinCache[$k];
 
-                    while ('/' !== $dir[--$i]) {
+                        while ('/' !== $dir[--$i]) {
+                        }
+                        $k = substr($k, 0, ++$i);
+                        $dir = substr($dir, 0, $i--);
                     }
-                    $k = substr($k, 0, ++$i);
-                    $dir = substr($dir, 0, $i--);
+                } catch (\ErrorException $exception){
+                    return $real;
                 }
             }
         }
